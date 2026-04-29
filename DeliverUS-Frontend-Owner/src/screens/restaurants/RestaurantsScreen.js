@@ -6,32 +6,64 @@ import TextRegular from '../../components/TextRegular'
 import * as GlobalStyles from '../../styles/GlobalStyles'
 import restaurantLogo from '../../../assets/restaurantLogo.jpeg'
 import { API_BASE_URL } from '@env'
+import ImageCard from '../../components/ImageCard'
 
 export default function RestaurantsScreen({ navigation, route }) {
-  return (
-    <View style={styles.container}>
-      <TextRegular style={{ fontSize: 16, alignSelf: 'center', margin: 20 }}>
-        Random Restaurant
-      </TextRegular>
+
+const [restaurants, setRestaurants] = useState([])
+
+useEffect(() => {
+    console.log('Loading restaurants, please wait 2 seconds')
+    setTimeout(() => {
+      setRestaurants(getAll) // getall le mete a setrestaurants la info recuperada y se la mete a restaurants 
+      console.log('Restaurants loaded')
+    }, 2000)
+  }, [])
+
+  //FUNCION PARA RENDERIZAR CADA RESTAURANTE EN LA FLATLIST
+
+  const renderRestaurant = ({ item }) => {
+    return (
       <Pressable
+        style={styles.row}
         onPress={() => {
-          navigation.navigate('RestaurantDetailScreen', {
-            id: Math.floor(Math.random() * 100)
-          })
-        }}
-        style={({ pressed }) => [
-          {
-            backgroundColor: pressed
-              ? GlobalStyles.brandBlueTap
-              : GlobalStyles.brandBlue
-          },
-          styles.actionButton
-        ]}
-      >
-        <TextRegular textStyle={styles.text}>Restaurant Details</TextRegular>
+          navigation.navigate('RestaurantDetailScreen', { id: item.id })
+        }}>
+          <TextRegular>
+              {item.name}
+          </TextRegular>
       </Pressable>
-    </View>
+    )
+  }
+
+
+  const renderRestaurantWithImageCard = ({ item }) => {
+    return (
+      <ImageCard
+        imageUri={item.logo ? { uri: API_BASE_URL + '/' + item.logo } : restaurantLogo}
+        title={item.name}
+        onPress={() => {
+          navigation.navigate('RestaurantDetailScreen', { id: item.id })
+        }}
+      >
+        <TextRegular numberOfLines={2}>{item.description}</TextRegular>
+        {item.averageServiceMinutes !== null &&
+          <TextSemiBold>Avg. service time: <TextSemiBold textStyle={{ color: GlobalStyles.brandPrimary }}>{item.averageServiceMinutes} min.</TextSemiBold></TextSemiBold>
+        }
+        <TextSemiBold>Shipping: <TextSemiBold textStyle={{ color: GlobalStyles.brandPrimary }}>{item.shippingCosts.toFixed(2)}€</TextSemiBold></TextSemiBold>
+      </ImageCard>
+    )
+  }
+  return (
+      <FlatList
+        style={styles.container}
+        data={restaurants}
+        renderItem={renderRestaurantWithImageCard}
+        keyExtractor={item => item.id.toString()}
+      />
   )
+
+ 
 }
 
 const styles = StyleSheet.create({
